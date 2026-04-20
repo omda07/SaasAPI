@@ -1,30 +1,13 @@
 const Booking = require("../models/booking_model");
 const Service = require("../models/service_model");
 const Staff = require("../models/staff_model");
+const Customer = require("../models/customer_model");
+const sendNotification = require("../utils/notification");
+const { canChangeStatus } = require("../services/bookingService");
+const moment = require("moment-timezone");
+
 const mongoose = require("mongoose");
 
-const isOverlapping = async ({
-  staff_id,
-  tenant_id,
-  startAt,
-  endAt,
-  excludeId = null,
-}) => {
-  return await Booking.findOne({
-    staff_id,
-    tenant_id,
-    _id: excludeId ? { $ne: excludeId } : { $exists: true },
-    status: { $in: ["pending", "confirmed"] },
-    $or: [
-      { startAt: { $lt: new Date(endAt), $gte: new Date(startAt) } },
-      { endAt: { $gt: new Date(startAt), $lte: new Date(endAt) } },
-      {
-        startAt: { $lte: new Date(startAt) },
-        endAt: { $gte: new Date(endAt) },
-      },
-    ],
-  });
-};
 const bookingCtrl = {
   // CREATE a new booking
   createBooking: async (req, res) => {
@@ -65,6 +48,7 @@ const bookingCtrl = {
           message: ["Staff not found"],
         });
       }
+     
 
       // ✅ check service exists in same tenant
       const service = await Service.findOne({ _id: service_id, tenant_id });
@@ -96,6 +80,7 @@ const bookingCtrl = {
           message: ["Staff already booked in this time slot"],
         });
       }
+    
 
       const booking = await Booking.create({
         tenant_id,
@@ -111,7 +96,31 @@ const bookingCtrl = {
         timezone,
         payment,
       });
+        booking.startAt = moment(booking.startAt)
+        .tz(booking.timezone || "UTC")
+        .format();
+      booking.endAt = moment(booking.endAt)
+        .tz(booking.timezone || "UTC")
+        .format();
+        if(booking){
+           let customerDoc = await Customer.findOne({
+        phone: customer.phone,
+        tenant_id,
+      });
 
+      if (!customerDoc) {
+        customerDoc = await Customer.create({
+          ...customer,
+          tenant_id,
+        });
+      }
+
+      customerDoc.totalBookings += 1;
+      customerDoc.lastVisit = new Date();
+      await customerDoc.save();
+        }
+      // after booking created
+      await sendNotification(booking);
       return res.status(201).json({
         status: true,
         data: booking,
@@ -208,7 +217,12 @@ const bookingCtrl = {
         tenant_id,
         isDeleted: false,
       });
-
+      if (status && !canChangeStatus(booking.status, status)) {
+        return res.status(400).json({
+          status: false,
+          message: ["Invalid status transition"],
+        });
+      }
       if (!booking) {
         return res.status(404).json({
           status: false,
@@ -275,44 +289,35 @@ const bookingCtrl = {
   deleteBooking: async (req, res) => {
     try {
       const { tenant_id } = req.user;
-      const { id } = req.body;
+      const { id } = req.params;
 
-      const booking = await Booking.findOne({
-        _id: id,
-        tenant_id,
-        isDeleted: false,
-      });
+      const booking = await Booking.findOne({ _id: id, tenant_id });
 
-      if (!booking) {
-        return res.status(404).json({
-          status: false,
-          message: ["Booking not found"],
+      if (!booking) return res.status(404).json({ message: "Not found" });
+
+      const diff = booking.startAt - new Date();
+
+      if (diff < 2 * 60 * 60 * 1000) {
+        return res.status(400).json({
+          message: "Too late to cancel",
         });
       }
 
       booking.isDeleted = true;
       booking.status = "cancelled";
-
       await booking.save();
 
-      return res.status(200).json({
-        status: true,
-        message: ["Booking cancelled successfully"],
-      });
-    } catch (error) {
-      return res.status(500).json({
-        status: false,
-        message: [error.message],
-      });
+      res.json({ status: true });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
     }
   },
 };
 /**
  * 🔥 I recommend next:
-Availability slots generator
-Calendar weekly view API
 Auto duration → endAt calculation
 Notification system (WhatsApp / SMS)
 Stripe payments
+Public booking page (like Calendly link)
  */
 module.exports = bookingCtrl;

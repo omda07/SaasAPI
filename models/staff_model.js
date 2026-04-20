@@ -7,20 +7,18 @@ const staffSchema = new mongoose.Schema(
       require: true,
     },
 
-    dayOfWeek: {
-      type: Number, //? 0 = Sunday, 6 = Saturday
-      required: true,
-    },
-
-    startTime: {
-      type: String, //? "09:00"
-      required: true,
-    },
-
-    endTime: {
-      type: String, //? "17:00"
-      required: true,
-    },
+    availability: [
+      {
+        day: Number,
+        slots: [
+          {
+            start: String,
+            end: String,
+          },
+        ],
+      },
+    ],
+    daysOff: [String],
 
     isOff: {
       type: Boolean,
@@ -29,9 +27,8 @@ const staffSchema = new mongoose.Schema(
 
     tenant_id: { type: mongoose.Schema.Types.ObjectId, ref: "Tenant" },
     service_id: { type: mongoose.Schema.Types.ObjectId, ref: "Service" },
-
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("Staff", staffSchema);

@@ -76,6 +76,7 @@ const tenantRoutes = require("./routes/tenant_route");
 const staffRoutes = require("./routes/staff_route");
 const serviceRoutes = require("./routes/service_route");
 const bookingRoutes = require("./routes/booking_route");
+const availabilityRoutes = require("./routes/availablity_route");
 // const notificationRoutes = require("./routes/notification_route");
 
 //* API Routes
@@ -84,6 +85,7 @@ app.use("/api/tenant", tenantRoutes);
 app.use("/api/staff", staffRoutes);
 app.use("/api/service", serviceRoutes);
 app.use("/api/booking", bookingRoutes);
+app.use("/api/availability", availabilityRoutes);
 // app.use("/api/notifications", notificationRoutes);
 
 //* 404 handler

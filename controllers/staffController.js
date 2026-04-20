@@ -24,14 +24,13 @@ const staffCtrl = {
 
       const {
         name,
-        dayOfWeek,
-        startTime,
-        endTime,
+        availability,
+        daysOff,
         isOff = false,
         service_id,
       } = req.body;
 
-      if (!name || dayOfWeek === undefined || !startTime || !endTime) {
+      if (!name || availability === undefined || !daysOff) {
         return res.status(400).json({
           status: false,
           message: ["Missing required fields"],
@@ -49,9 +48,8 @@ const staffCtrl = {
 
       const staff = await Staff.create({
         name,
-        dayOfWeek,
-        startTime,
-        endTime,
+        availability,
+        daysOff,
         isOff,
         tenant_id,
         service_id,

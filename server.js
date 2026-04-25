@@ -78,8 +78,35 @@ const serviceRoutes = require("./routes/service_route");
 const bookingRoutes = require("./routes/booking_route");
 const availabilityRoutes = require("./routes/availablity_route");
 // const notificationRoutes = require("./routes/notification_route");
+const customerRoutes = require("./routes/customer_route");
+const categoryRoutes = require("./routes/category_route");
+const blockTimeRoutes = require("./routes/blockTime_route");
+const sessionRoutes = require("./routes/session_route");
+const membershipPlanRoutes = require("./routes/membershipPlan_route");
+const membershipRoutes = require("./routes/membership_route");
+const invoiceRoutes = require("./routes/invoice_route");
+const reviewRoutes = require("./routes/review_route");
+const attendanceRoutes = require("./routes/attendance_route");
+const qrRoutes = require("./routes/qr_route");
+// const waitlistRoutes = require("./routes/waitlist_route");
+const notificationRoutes = require("./routes/notification_route");
+const tenantPlanRoutes = require("./routes/tenantPlan_route");
 
 //* API Routes
+app.use("/api/customer", customerRoutes);
+app.use("/api/category", categoryRoutes);
+app.use("/api/blocktime", blockTimeRoutes);
+app.use("/api/session", sessionRoutes);
+app.use("/api/membership-plan", membershipPlanRoutes);
+app.use("/api/membership", membershipRoutes);
+app.use("/api/invoice", invoiceRoutes);
+app.use("/api/review", reviewRoutes);
+app.use("/api/attendance", attendanceRoutes);
+app.use("/api/qr", qrRoutes);
+// app.use("/api/waitlist", waitlistRoutes);
+app.use("/api/notification", notificationRoutes);
+app.use("/api/tenant-plan", tenantPlanRoutes);
+
 app.use("/api/user", userRoutes);
 app.use("/api/tenant", tenantRoutes);
 app.use("/api/staff", staffRoutes);

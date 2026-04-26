@@ -87,6 +87,7 @@ const userCtrl = {
       return res.status(200).json({
         status: true,
         message: "Login success",
+        user:user,
         token,
         role: user.role,
         language: user.language,
